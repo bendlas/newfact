@@ -307,6 +307,17 @@ nil if the end of stream has been reached")
   (read rdr true nil true)
   rdr)
 
+;; actually a non - implementation of syntax-quote/unquote
+;; but good enough for now
+
+(defn read-sq
+  [rdr _]
+  (read rdr true nil true))
+
+(defn read-uq
+  [rdr _]
+  (read rdr true nil true))
+
 (def macros
      { \" read-string
        \: read-keyword
@@ -314,8 +325,8 @@ nil if the end of stream has been reached")
        \' (wrapping-reader 'quote)
        \@ (wrapping-reader 'deref)
        \^ read-meta
-       \` not-implemented
-       \~ not-implemented
+       \` read-sq
+       \~ read-uq
        \( read-list
        \) read-unmatched-delimiter
        \[ read-vector
