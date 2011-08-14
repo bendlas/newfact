@@ -24,13 +24,14 @@ nil if the end of stream has been reached")
         cnt (atom 0)]
     (reify PushbackReader
       (read-char [_]
-        (swap! cnt inc)
         (let [c (.read rdr)]
           (when-not (neg? c)
+            (swap! cnt inc)
             (char c))))
       (unread [_ ch]
-        (swap! cnt dec)
-        (.unread rdr (int ch)))
+        (when ch
+          (.unread rdr (int ch))
+          (swap! cnt dec)))
       (read-count [_] @cnt))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -285,7 +286,7 @@ nil if the end of stream has been reached")
     (when-not (map? m)
       (reader-error rdr "Metadata must be Symbol,Keyword,String or Map"))
     (let [o (read rdr true nil true)]
-      (if (satisfies? clojure.lang.IObj o)
+      (if (instance? clojure.lang.IObj o)
         (with-meta o (merge (meta o) m))
         (reader-error rdr "Metadata can only be applied to IObjs")))))
 
