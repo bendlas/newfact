@@ -74,7 +74,7 @@ nil if the end of stream has been reached")
   (throw (RuntimeException. (apply str msg))))
 
 (defn macro-terminating? [ch]
-  (and (not= ch "#") (not= ch \') (contains? macros ch)))
+  (and (not= ch \#) (not= ch \') (contains? macros ch)))
 
 (defn read-token
   [rdr initch]
@@ -105,7 +105,7 @@ nil if the end of stream has been reached")
   (let [groups (re-find int-pattern s)]
     (if (nth groups 2)
       0
-      (let [negate (if (= "-" (nth groups 1)) -1 1) 
+      (let [negate (if (= \- (nth groups 1)) -1 1) 
             [n radix] (cond
                        (nth groups 3) [(nth groups 3) 10]
                        (nth groups 4) [(nth groups 4) 16]
@@ -135,13 +135,13 @@ nil if the end of stream has been reached")
    (re-matches ratio-pattern s) (match-ratio s)
    (re-matches float-pattern s) (match-float s)))
 
-(def escape-char-map {\t "\t"
-                      \r "\r"
-                      \n "\n"
+(def escape-char-map {\t \tab
+                      \r \return
+                      \n \newline
                       \\ \\
                       \" \"
-                      \b "\b"
-                      \f "\f"})
+                      \b \backspace
+                      \f \formfeed})
 
 (defn read-unicode-char
   [reader initch]
@@ -248,11 +248,15 @@ nil if the end of stream has been reached")
 
 (defn read-symbol
   [reader initch]
-  (let [token (read-token reader initch)]
-    (if (pos? (.indexOf token (int \/)))
-      (symbol (subs token 0 (.indexOf token (int \/)))
-              (subs (inc (.indexOf token (int \/))) (.length token)))
-      (get special-symbols token (symbol token)))))
+  (let [start (dec (read-count reader))
+        token (read-token reader initch)
+        end (read-count reader)
+        sym (if (pos? (.indexOf token (int \/)))
+              (symbol (subs token 0 (.indexOf token (int \/)))
+                      (subs (inc (.indexOf token (int \/))) (.length token)))
+              (get special-symbols token (symbol token)))]
+    (with-meta sym
+      (merge (meta sym) {:start start :end end}))))
 
 (defn read-keyword
   [reader initch]
@@ -329,7 +333,8 @@ nil if the end of stream has been reached")
    \< (throwing-reader "Unreadable form")
    \" read-regex
    \! read-comment
-   \_ read-discard})
+   \_ read-discard
+   \^ read-meta})
 
 (defn read
   "Reads the first object from a PushbackReader. Returns the object read.
