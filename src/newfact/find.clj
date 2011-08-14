@@ -12,7 +12,9 @@
 (defn references
   ([form sym] (references form sym *ns*))
   ([form sym n]
-     (references* form (resolve sym) #{} n)))
+     (if-let [v (resolve sym)]
+       (references* form v #{} n)
+       (not-found sym))))
 
 (defn in-seq [body v l n]
   (mapcat #(references* % v l n)
