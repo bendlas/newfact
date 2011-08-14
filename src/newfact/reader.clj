@@ -22,7 +22,8 @@ nil if the end of stream has been reached")
 (defn push-back-reader [rdr]
   (let [rdr (java.io.PushbackReader. rdr)
         cnt (atom 0)]
-    (reify PushbackReader
+    (reify
+      PushbackReader
       (read-char [_]
         (let [c (.read rdr)]
           (when-not (neg? c)
@@ -32,7 +33,9 @@ nil if the end of stream has been reached")
         (when ch
           (.unread rdr (int ch))
           (swap! cnt dec)))
-      (read-count [_] @cnt))))
+      (read-count [_] @cnt)
+      java.io.Closeable
+      (close [_] (.close rdr)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; predicates
@@ -253,10 +256,12 @@ nil if the end of stream has been reached")
         end (read-count reader)
         sym (if (pos? (.indexOf token (int \/)))
               (symbol (subs token 0 (.indexOf token (int \/)))
-                      (subs (inc (.indexOf token (int \/))) (.length token)))
+                      (subs token (inc (.indexOf token (int \/))) (.length token)))
               (get special-symbols token (symbol token)))]
-    (with-meta sym
-      (merge (meta sym) {:start start :end end}))))
+    (if (instance? clojure.lang.IObj sym)
+      (with-meta sym
+        (merge (meta sym) {:start start :end end}))
+      sym)))
 
 (defn read-keyword
   [reader initch]
@@ -318,6 +323,10 @@ nil if the end of stream has been reached")
   [rdr _]
   (read rdr true nil true))
 
+(defn read-gensym [rdr ini]
+  (read-symbol rdr ini)
+  (gensym "%"))
+
 (def macros
      { \" read-string
        \: read-keyword
@@ -334,7 +343,7 @@ nil if the end of stream has been reached")
        \{ read-map
        \} read-unmatched-delimiter
        \\ read-char
-       \% not-implemented
+       \% read-gensym
        \# read-dispatch
        })
 
@@ -345,7 +354,8 @@ nil if the end of stream has been reached")
    \" read-regex
    \! read-comment
    \_ read-discard
-   \^ read-meta})
+   \^ read-meta
+   \( read-list})
 
 (defn read
   "Reads the first object from a PushbackReader. Returns the object read.
