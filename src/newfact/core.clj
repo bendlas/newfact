@@ -45,4 +45,4 @@ symbol 'ref' replaced by 'to'."
                 (recur all (+ pos cnt)))))
           (io/copy rdr *out*))))))
 
-(rename "src/newfact/core.clj" *ns* 'found 'rewuschel)
+#_(rename "src/newfact/core.clj" *ns* 'found 'rewuschel)
