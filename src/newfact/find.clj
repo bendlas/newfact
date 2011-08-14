@@ -10,6 +10,8 @@
   (references* [form v locals namespace]))
 
 (defn references
+  "Search for occurrences of resolved sym in form, return list of syms.
+Duplicates may occur due to macro expansion"
   ([form sym] (references form sym *ns*))
   ([form sym n]
      (if-let [v (resolve sym)]
