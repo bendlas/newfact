@@ -6,14 +6,19 @@ A sneak peek of a new refactoring tool for clojure
 
 For now, you need to use it from a repl:
 
-    (use 'newfact.core)
-    (require 'source.file)
-    (rename "source/file.clj" (find-ns 'source.file) 'old 'new)
+    > (use 'newfact.core)
+    > (require 'source.file)
+    > (rename "source/file.clj" (find-ns 'source.file) 'old 'new)
 
 For now, the only user facing function is `newfact.core/rename`,
 which is invoked like:
 
-    (rename "src/newfact/core.clj" *ns* 'found 'rewuschel)
+    > (rename "src/newfact/core.clj" *ns* 'found 'rewuschel)
+    (ns ...)
+    (lexically correctly)
+    (updated source)
+    (forms)
+    ...
 
 It prints the file with all references to `found` replaced by `rewuschel`.
 
@@ -28,9 +33,9 @@ to the builtin clojure special forms.
 
 ## Reader
 
-*Newfact* uses a custom reader to analyze source forms. The
+**Newfact** uses a custom reader to analyze source forms. The
 implementation is shamelessly ripped of from ClojureScript and
-adapted to the JVM environment. Hat tip to *clojure/core* for the
+adapted to the JVM environment. Hat tip to **clojure/core** for the
 elegant, easy to work with, implementation.
 
 It is modified slightly to store stream positions in the meta data for
