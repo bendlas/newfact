@@ -14,7 +14,7 @@
 Duplicates may occur due to macro expansion"
   ([form sym] (references form sym *ns*))
   ([form sym n]
-     (if-let [v (resolve sym)]
+     (if-let [v (ns-resolve n sym)]
        (references* form v #{} n)
        (not-found sym))))
 
