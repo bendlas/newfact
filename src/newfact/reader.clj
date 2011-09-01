@@ -234,7 +234,7 @@ nil if the end of stream has been reached")
               (reader-error reader "Invalid number format [" s "]"))))
       (recur (do (.append buffer ch) buffer) (read-char reader)))))
 
-(defn read-string
+(defn read-literal-string
   [reader _]
   (loop [buffer (StringBuilder.)
          ch (read-char reader)]
@@ -305,7 +305,15 @@ nil if the end of stream has been reached")
 
 (defn read-regex
   [rdr ch]
-  (-> (read-string rdr ch) re-pattern))
+  (loop [buffer (StringBuilder.)
+         ch (read-char rdr)]
+    (cond
+     (nil? ch) (reader-error rdr "EOF while reading string")
+     (= \\ ch) (do (.append buffer ch)
+                   (.append buffer (read-char rdr)) ;; TODO check for EOF
+                   (recur buffer (read-char rdr)))
+     (= \" ch) (re-pattern (.toString buffer))
+     :default (recur (do (.append buffer ch) buffer) (read-char rdr)))))
 
 (defn read-discard
   [rdr _]
@@ -328,7 +336,7 @@ nil if the end of stream has been reached")
   (gensym "%"))
 
 (def macros
-     { \" read-string
+     { \" read-literal-string
        \: read-keyword
        \; not-implemented ;; never hit this
        \' (wrapping-reader 'quote)
