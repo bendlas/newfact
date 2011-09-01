@@ -1,7 +1,5 @@
-(ns newfact.find)
-
-(defmacro throwf [E msg & parms]
-  `(throw (new ~E (format ~msg ~@parms))))
+(ns newfact.find
+  (:use newfact.util))
 
 (defn not-found [sym]
   (throwf RuntimeException "Can't find %s in current context" sym))
