@@ -1,4 +1,4 @@
-(ns newfact.utils
+(ns newfact.test.utils
   (:require [clojure.contrib.mock :only (report-problem expect)])
   (:import [java.lang AssertionError])
   (:use [clojure.contrib.def :only (defmacro-)]
@@ -6,15 +6,15 @@
 
 (defn- throw-error [func actual expected & msg]
   (throw (AssertionError. 
-    (str (if msg 
-             (str (first msg) " ")
-           "")
-         "verification function is: " func "\nexpected: " (if (nil? expected) "nil" expected) "\n but got: " (if (nil? actual) "nil" actual) "\ndiff: " (with-out-str (difform expected actual))))))
+    (str (if (seq msg) 
+	   (str (first msg) " ")
+	    "")
+         "verification function is: " func "\nexpected: " (if (nil? expected) "nil" expected) "\n but got: " (if actual actual "nil") "\ndiff: " (with-out-str (difform expected actual))))))
 
 (defn is
   ([func actual]
     (if (not (func actual))
-        (throw (AssertionError. (str "verification function is: " func "\nwith value " (if (nil? actual) "nil" actual) "\nis false.")))
+        (throw (AssertionError. (str "verification function is: " func "\nwith value " (if actual actual "nil") "\nis false.")))
       true))
   ([func actual expected]
     (if (not (func actual expected))
@@ -37,7 +37,7 @@
         (when more
           (list* `assert-args fnname more)))))
 
-(defn #^{:private true} make-bindings [expect-bindings mock-data-sym]
+(defn ^:private make-bindings [expect-bindings mock-data-sym]
     `[~@(interleave (map #(first %) (partition 2 expect-bindings))
            (map (fn [i] `(nth (nth ~mock-data-sym ~i) 0))
          (range (quot (count expect-bindings) 2))))])

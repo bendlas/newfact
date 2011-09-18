@@ -1,4 +1,6 @@
 pom.xml
+*.sw*
+/bin/
 *jar
 /lib/
 /classes/
