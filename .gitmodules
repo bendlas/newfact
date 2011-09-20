@@ -1,0 +1,3 @@
+[submodule "clojurescript"]
+	path = clojurescript
+	url = /home/herwig/checkouts/clojurescript
